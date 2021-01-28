@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { GoogleApiWrapper, Map, Marker } from 'google-maps-react';
 
@@ -10,15 +10,7 @@ export const MapContainer = (props) => {
   const { google, query, placeId } = props;
   const { restaurants } = useSelector((state) => state.restaurants);
 
-  useEffect(() => {
-    if (query) searchByQuery(query);
-  }, [query]);
-
-  useEffect(() => {
-    if (placeId) getRestaurantDetails(placeId);
-  }, [placeId]);
-
-  function getRestaurantDetails() {
+  const getRestaurantDetails = useCallback(() => {
     const service = new google.maps.places.PlacesService(map);
     dispatch(setRestaurant(null));
 
@@ -39,25 +31,28 @@ export const MapContainer = (props) => {
         dispatch(setRestaurant(place));
       }
     });
-  }
+  }, [dispatch, google.maps.places, map, placeId]);
 
-  function searchByQuery(query) {
-    const service = new google.maps.places.PlacesService(map);
-    dispatch(setRestaurants([]));
+  const searchByQuery = useCallback(
+    (query) => {
+      const service = new google.maps.places.PlacesService(map);
+      dispatch(setRestaurants([]));
 
-    const request = {
-      location: map.center,
-      radius: '2000',
-      type: ['restaurant'],
-      query,
-    };
+      const request = {
+        location: map.center,
+        radius: '2000',
+        type: ['restaurant'],
+        query,
+      };
 
-    service.textSearch(request, (results, status) => {
-      if (status === google.maps.places.PlacesServiceStatus.OK) {
-        dispatch(setRestaurants(results));
-      }
-    });
-  }
+      service.textSearch(request, (results, status) => {
+        if (status === google.maps.places.PlacesServiceStatus.OK) {
+          dispatch(setRestaurants(results));
+        }
+      });
+    },
+    [dispatch, google.maps.places, map]
+  );
 
   function searchNearby(map, center) {
     const service = new google.maps.places.PlacesService(map);
@@ -75,6 +70,14 @@ export const MapContainer = (props) => {
       }
     });
   }
+
+  useEffect(() => {
+    if (query) searchByQuery(query);
+  }, [query, searchByQuery]);
+
+  useEffect(() => {
+    if (placeId) getRestaurantDetails(placeId);
+  }, [placeId, getRestaurantDetails]);
 
   function onMapReady(_, map) {
     setMap(map);
