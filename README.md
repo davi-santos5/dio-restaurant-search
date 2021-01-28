@@ -52,7 +52,7 @@ O usuário ainda pode utilizar um campo de busca para filtrar os restaurantes po
 
 
 
-Ou acesse a aplicação: [Restaurant Search]((https://restaurant-search-dio.netlify.app/))
+Ou acesse a aplicação: [Restaurant Search](https://restaurant-search-dio.netlify.app/)
 
 ![demo](./src/assets/demo.gif)
 
